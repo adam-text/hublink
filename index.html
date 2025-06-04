@@ -46,12 +46,12 @@
                             </div>
                             <div class="stats">
                                 <div class="stat">
-                                    <span class="number">18,470</span>
-                                    <span class="label">Contacts</span>
+                                    <span class="number">847</span>
+                                    <span class="label">in Contacts</span>
                                 </div>
                                 <div class="stat">
-                                    <span class="number">9,230</span>
-                                    <span class="label">Companies</span>
+                                    <span class="number">423</span>
+                                    <span class="label">in Companies</span>
                                 </div>
                             </div>
                             <div class="chart-container">
@@ -282,24 +282,26 @@
                         </div>
                     </div>
                     
-                    <div class="throttling-controls">
-                        <h3>Throttling Controls</h3>
-                        <div class="throttle-grid">
-                            <div class="throttle-control">
-                                <span>LiveChat</span>
-                                <input type="range" min="1" max="50" value="20">
-                                <span>20 calls/min</span>
+                    <div class="error-analytics">
+                        <h3>Error Analytics</h3>
+                        <div class="error-filters">
+                            <div class="error-date-picker">
+                                <input type="date" id="errorDateFrom" class="date-input" value="2024-01-01">
+                                <span class="date-separator">do</span>
+                                <input type="date" id="errorDateTo" class="date-input" value="2024-01-15">
                             </div>
-                            <div class="throttle-control">
-                                <span>HelpDesk</span>
-                                <input type="range" min="1" max="50" value="15">
-                                <span>15 calls/min</span>
-                            </div>
-                            <div class="throttle-control">
-                                <span>ChatBot</span>
-                                <input type="range" min="1" max="50" value="10">
-                                <span>10 calls/min</span>
-                            </div>
+                            <select class="filter-select" id="errorSourceFilter">
+                                <option value="all">All Sources</option>
+                                <option value="livechat">LiveChat</option>
+                                <option value="helpdesk">HelpDesk</option>
+                                <option value="chatbot">ChatBot</option>
+                                <option value="partner">Partner CRM</option>
+                                <option value="datateam">Data Team</option>
+                                <option value="clearbit">ClearBit</option>
+                            </select>
+                        </div>
+                        <div class="error-chart-container">
+                            <canvas id="errorChart"></canvas>
                         </div>
                     </div>
                     

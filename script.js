@@ -20,6 +20,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Charts
     initializeCharts();
     
+    // Error Analytics Date Pickers
+    const errorDateFrom = document.getElementById('errorDateFrom');
+    const errorDateTo = document.getElementById('errorDateTo');
+    const errorSourceFilter = document.getElementById('errorSourceFilter');
+    
+    if (errorDateFrom && errorDateTo && errorSourceFilter) {
+        errorDateFrom.addEventListener('change', updateErrorChart);
+        errorDateTo.addEventListener('change', updateErrorChart);
+        errorSourceFilter.addEventListener('change', updateErrorChart);
+    }
+    
     // Chart Period Selector
     const chartPeriodSelector = document.getElementById('chartPeriodSelector');
     if (chartPeriodSelector) {
@@ -59,16 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const sourceName = button.textContent.trim();
             updatePropertiesPanel(sourceName);
-        });
-    });
-    
-    // Throttling Controls
-    const throttleSliders = document.querySelectorAll('.throttle-control input[type="range"]');
-    throttleSliders.forEach(slider => {
-        slider.addEventListener('input', (e) => {
-            const value = e.target.value;
-            const label = e.target.nextElementSibling;
-            label.textContent = `${value} calls/min`;
         });
     });
     
@@ -173,6 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Charts Management
 let mainChart = null;
 let miniCharts = {};
+let errorChart = null;
 
 function initializeCharts() {
     // Initialize main chart
@@ -183,6 +185,9 @@ function initializeCharts() {
     sources.forEach(source => {
         createMiniChart(source);
     });
+    
+    // Initialize error chart
+    createErrorChart();
 }
 
 function createMainChart(period) {
@@ -338,18 +343,18 @@ function getMainChartData(period) {
     const baseData = {
         day: {
             labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            contacts: [16200, 17800, 18100, 18900, 19200, 17600, 16800],
-            companies: [8100, 8900, 9050, 9450, 9600, 8800, 8400]
+            contacts: [810, 890, 905, 945, 960, 880, 840],
+            companies: [405, 445, 452, 472, 480, 440, 420]
         },
         month: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            contacts: [15200, 16800, 17200, 17900, 18100, 18300, 18500, 18200, 18400, 18600, 18800, 18470],
-            companies: [7600, 8400, 8600, 8950, 9050, 9150, 9250, 9100, 9200, 9300, 9400, 9230]
+            contacts: [760, 840, 860, 895, 905, 915, 925, 910, 920, 930, 940, 847],
+            companies: [380, 420, 430, 447, 452, 457, 462, 455, 460, 465, 470, 423]
         },
         year: {
             labels: ['2019', '2020', '2021', '2022', '2023', '2024'],
-            contacts: [8200, 10500, 13200, 15800, 17200, 18470],
-            companies: [4100, 5250, 6600, 7900, 8600, 9230]
+            contacts: [410, 525, 660, 790, 860, 847],
+            companies: [205, 262, 330, 395, 430, 423]
         }
     };
     
@@ -515,8 +520,8 @@ function getMainChartDataForDateRange(period, dateFrom, dateTo) {
             }));
             
             // Generate realistic data with some variation
-            const baseContacts = 15000 + (i * 500) + Math.random() * 2000;
-            const baseCompanies = 7500 + (i * 250) + Math.random() * 1000;
+            const baseContacts = 750 + (i * 25) + Math.random() * 100;
+            const baseCompanies = 375 + (i * 12) + Math.random() * 50;
             
             contacts.push(Math.round(baseContacts));
             companies.push(Math.round(baseCompanies));
@@ -828,4 +833,124 @@ document.addEventListener('DOMContentLoaded', () => {
     tabButtons.forEach((button, index) => {
         button.title = `Alt+${index + 1} - ${button.textContent}`;
     });
-}); 
+});
+
+function createErrorChart() {
+    const ctx = document.getElementById('errorChart');
+    if (!ctx) return;
+    
+    if (errorChart) {
+        errorChart.destroy();
+    }
+    
+    const data = getErrorChartData();
+    
+    errorChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: '4XX Errors',
+                    data: data.errors4xx,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: '5XX Errors',
+                    data: data.errors5xx,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Data'
+                    },
+                    grid: {
+                        color: '#f1f5f9'
+                    }
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Liczba błędów'
+                    },
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f1f5f9'
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    });
+}
+
+function getErrorChartData() {
+    const dateFrom = document.getElementById('errorDateFrom')?.value || '2024-01-01';
+    const dateTo = document.getElementById('errorDateTo')?.value || '2024-01-15';
+    const sourceFilter = document.getElementById('errorSourceFilter')?.value || 'all';
+    
+    // Generate dates between dateFrom and dateTo
+    const startDate = new Date(dateFrom);
+    const endDate = new Date(dateTo);
+    const labels = [];
+    const errors4xx = [];
+    const errors5xx = [];
+    
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+        labels.push(currentDate.toLocaleDateString('pl-PL', { month: 'short', day: 'numeric' }));
+        
+        // Generate sample error data based on source filter
+        let base4xx = sourceFilter === 'all' ? 15 : 8;
+        let base5xx = sourceFilter === 'all' ? 5 : 2;
+        
+        // Add some variation
+        const variation4xx = Math.floor(Math.random() * 10) - 5;
+        const variation5xx = Math.floor(Math.random() * 4) - 2;
+        
+        errors4xx.push(Math.max(0, base4xx + variation4xx));
+        errors5xx.push(Math.max(0, base5xx + variation5xx));
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return { labels, errors4xx, errors5xx };
+}
+
+function updateErrorChart() {
+    createErrorChart();
+} 
