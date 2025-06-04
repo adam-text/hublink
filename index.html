@@ -282,29 +282,6 @@
                         </div>
                     </div>
                     
-                    <div class="error-analytics">
-                        <h3>Error Analytics</h3>
-                        <div class="error-filters">
-                            <div class="error-date-picker">
-                                <input type="date" id="errorDateFrom" class="date-input" value="2024-01-01">
-                                <span class="date-separator">do</span>
-                                <input type="date" id="errorDateTo" class="date-input" value="2024-01-15">
-                            </div>
-                            <select class="filter-select" id="errorSourceFilter">
-                                <option value="all">All Sources</option>
-                                <option value="livechat">LiveChat</option>
-                                <option value="helpdesk">HelpDesk</option>
-                                <option value="chatbot">ChatBot</option>
-                                <option value="partner">Partner CRM</option>
-                                <option value="datateam">Data Team</option>
-                                <option value="clearbit">ClearBit</option>
-                            </select>
-                        </div>
-                        <div class="error-chart-container">
-                            <canvas id="errorChart"></canvas>
-                        </div>
-                    </div>
-                    
                     <div class="retry-queue">
                         <h3>Failed Record Retry Queue</h3>
                         <div class="retry-table">
@@ -353,8 +330,21 @@
                                     <option>DELETE</option>
                                 </select>
                                 <input type="text" class="filter-input" placeholder="Filter by URL...">
-                                <input type="date" class="filter-date">
-                                <input type="time" class="filter-time">
+                                <input type="date" class="filter-date" id="errorDateFrom" value="2024-01-01">
+                                <input type="date" class="filter-date" id="errorDateTo" value="2024-01-15">
+                                <select class="filter-select" id="errorSourceFilter">
+                                    <option value="all">All Sources</option>
+                                    <option value="livechat">LiveChat</option>
+                                    <option value="helpdesk">HelpDesk</option>
+                                    <option value="chatbot">ChatBot</option>
+                                    <option value="partner">Partner CRM</option>
+                                    <option value="datateam">Data Team</option>
+                                    <option value="clearbit">ClearBit</option>
+                                </select>
+                            </div>
+                            
+                            <div class="error-chart-container">
+                                <canvas id="errorChart"></canvas>
                             </div>
                             
                             <div class="api-usage-summary">
@@ -714,23 +704,30 @@
                     </div>
                     
                     <div class="batch-controls">
-                        <h3>Batch Processing Controls</h3>
+                        <div class="batch-header">
+                            <h3>Batch Processing Controls</h3>
+                            <button class="btn-secondary" id="editBatchBtn">✏️ Edit</button>
+                        </div>
                         <div class="batch-settings">
                             <div class="setting-group">
                                 <label>Chunk Size</label>
-                                <input type="number" value="100" min="10" max="1000">
+                                <input type="number" value="100" min="10" max="1000" disabled class="batch-input">
                                 <span>records per batch</span>
                             </div>
                             <div class="setting-group">
                                 <label>Batch Interval</label>
-                                <input type="number" value="30" min="1" max="300">
+                                <input type="number" value="30" min="1" max="300" disabled class="batch-input">
                                 <span>seconds between batches</span>
                             </div>
                             <div class="setting-group">
                                 <label>Max Concurrent</label>
-                                <input type="number" value="5" min="1" max="20">
+                                <input type="number" value="5" min="1" max="20" disabled class="batch-input">
                                 <span>parallel processes</span>
                             </div>
+                        </div>
+                        <div class="batch-actions" id="batchActions" style="display: none;">
+                            <button class="btn-primary" id="saveBatchBtn">💾 Save</button>
+                            <button class="btn-secondary" id="cancelBatchBtn">❌ Cancel</button>
                         </div>
                     </div>
                     

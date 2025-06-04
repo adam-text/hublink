@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Charts
     initializeCharts();
     
+    // Initialize Properties Panel with LiveChat
+    updatePropertiesPanel('💬 LiveChat');
+    
     // Error Analytics Date Pickers
     const errorDateFrom = document.getElementById('errorDateFrom');
     const errorDateTo = document.getElementById('errorDateTo');
@@ -164,6 +167,55 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target.value !== 'Load Template...') {
                 loadTemplate(e.target.value);
             }
+        });
+    }
+    
+    // Batch Processing Controls Edit
+    const editBatchBtn = document.getElementById('editBatchBtn');
+    const saveBatchBtn = document.getElementById('saveBatchBtn');
+    const cancelBatchBtn = document.getElementById('cancelBatchBtn');
+    const batchActions = document.getElementById('batchActions');
+    const batchInputs = document.querySelectorAll('.batch-input');
+    
+    let originalValues = {};
+    
+    if (editBatchBtn) {
+        editBatchBtn.addEventListener('click', () => {
+            // Store original values
+            batchInputs.forEach((input, index) => {
+                originalValues[index] = input.value;
+                input.disabled = false;
+            });
+            
+            editBatchBtn.style.display = 'none';
+            batchActions.style.display = 'flex';
+        });
+    }
+    
+    if (saveBatchBtn) {
+        saveBatchBtn.addEventListener('click', () => {
+            // Save changes
+            batchInputs.forEach(input => {
+                input.disabled = true;
+            });
+            
+            editBatchBtn.style.display = 'inline-flex';
+            batchActions.style.display = 'none';
+            
+            showNotification('Batch processing settings saved successfully!');
+        });
+    }
+    
+    if (cancelBatchBtn) {
+        cancelBatchBtn.addEventListener('click', () => {
+            // Restore original values
+            batchInputs.forEach((input, index) => {
+                input.value = originalValues[index];
+                input.disabled = true;
+            });
+            
+            editBatchBtn.style.display = 'inline-flex';
+            batchActions.style.display = 'none';
         });
     }
     
@@ -343,18 +395,18 @@ function getMainChartData(period) {
     const baseData = {
         day: {
             labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            contacts: [810, 890, 905, 945, 960, 880, 840],
-            companies: [405, 445, 452, 472, 480, 440, 420]
+            contacts: [820, 835, 840, 845, 850, 845, 847],
+            companies: [410, 415, 418, 420, 422, 421, 423]
         },
         month: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            contacts: [760, 840, 860, 895, 905, 915, 925, 910, 920, 930, 940, 847],
-            companies: [380, 420, 430, 447, 452, 457, 462, 455, 460, 465, 470, 423]
+            contacts: [760, 780, 800, 815, 825, 830, 835, 838, 840, 843, 845, 847],
+            companies: [380, 390, 400, 407, 412, 415, 417, 419, 420, 421, 422, 423]
         },
         year: {
             labels: ['2019', '2020', '2021', '2022', '2023', '2024'],
-            contacts: [410, 525, 660, 790, 860, 847],
-            companies: [205, 262, 330, 395, 430, 423]
+            contacts: [450, 550, 650, 720, 780, 847],
+            companies: [225, 275, 325, 360, 390, 423]
         }
     };
     
@@ -520,8 +572,8 @@ function getMainChartDataForDateRange(period, dateFrom, dateTo) {
             }));
             
             // Generate realistic data with some variation
-            const baseContacts = 750 + (i * 25) + Math.random() * 100;
-            const baseCompanies = 375 + (i * 12) + Math.random() * 50;
+            const baseContacts = 820 + (i * 2) + Math.random() * 10;
+            const baseCompanies = 410 + (i * 1) + Math.random() * 5;
             
             contacts.push(Math.round(baseContacts));
             companies.push(Math.round(baseCompanies));
