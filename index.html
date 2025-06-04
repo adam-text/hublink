@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HubLink - HubSpot Integration Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <h1 class="logo">🔗 HubLink</h1>
+            <p class="tagline">HubSpot Integration Dashboard</p>
+        </header>
+        
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="home">Home</button>
+            <button class="tab-btn" data-tab="db-monitor">Properties</button>
+            <button class="tab-btn" data-tab="logs">Logs</button>
+            <button class="tab-btn" data-tab="alerts">Alerts</button>
+            <button class="tab-btn" data-tab="backups">Backups</button>
+            <button class="tab-btn" data-tab="config">Config</button>
+        </nav>
+
+        <main class="main-content">
+            <!-- Home Page -->
+            <div id="home" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="summary-cards">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Total HubSpot Properties</h3>
+                                <div class="chart-controls">
+                                    <select class="period-selector" id="chartPeriodSelector">
+                                        <option value="day">Per Day</option>
+                                        <option value="month" selected>Per Month</option>
+                                        <option value="year">Per Year</option>
+                                    </select>
+                                    <div class="date-range-picker">
+                                        <input type="date" id="dateFrom" class="date-input" value="2024-01-01">
+                                        <span class="date-separator">do</span>
+                                        <input type="date" id="dateTo" class="date-input" value="2024-12-31">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stats">
+                                <div class="stat">
+                                    <span class="number">18,470</span>
+                                    <span class="label">Contacts</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="number">9,230</span>
+                                    <span class="label">Companies</span>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="mainChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="daily-updates">
+                        <div class="updates-header">
+                            <h3>
+                                <select class="update-period-selector" id="updatePeriodSelector">
+                                    <option value="daily" selected>Daily</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                                Updates by Source
+                            </h3>
+                        </div>
+                        <div class="source-grid">
+                            <div class="source-card">
+                                <h4>💬 LiveChat</h4>
+                                <div class="update-stats">
+                                    <span class="contacts-update">Contacts: 23,410</span>
+                                    <span class="companies-update">Companies: 8,910</span>
+                                </div>
+                                <div class="mini-chart-container">
+                                    <canvas id="livechatChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="source-card">
+                                <h4>🎫 HelpDesk</h4>
+                                <div class="update-stats">
+                                    <span class="contacts-update">Contacts: 15,670</span>
+                                    <span class="companies-update">Companies: 4,330</span>
+                                </div>
+                                <div class="mini-chart-container">
+                                    <canvas id="helpdeskChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="source-card">
+                                <h4>🤖 ChatBot</h4>
+                                <div class="update-stats">
+                                    <span class="contacts-update">Contacts: 8,920</span>
+                                    <span class="companies-update">Companies: 1,240</span>
+                                </div>
+                                <div class="mini-chart-container">
+                                    <canvas id="chatbotChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="source-card">
+                                <h4>🤝 Partner CRM</h4>
+                                <div class="update-stats">
+                                    <span class="contacts-update">Contacts: 4,450</span>
+                                    <span class="companies-update">Companies: 2,980</span>
+                                </div>
+                                <div class="mini-chart-container">
+                                    <canvas id="partnerChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="source-card">
+                                <h4>📊 Data Team</h4>
+                                <div class="update-stats">
+                                    <span class="contacts-update">Contacts: 12,340</span>
+                                    <span class="companies-update">Companies: 5,670</span>
+                                </div>
+                                <div class="mini-chart-container">
+                                    <canvas id="datateamChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="source-card">
+                                <h4>🔍 ClearBit</h4>
+                                <div class="update-stats">
+                                    <span class="contacts-update">Contacts: 34,560</span>
+                                    <span class="companies-update">Companies: 18,920</span>
+                                </div>
+                                <div class="mini-chart-container">
+                                    <canvas id="clearbitChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DB Monitor Page -->
+            <div id="db-monitor" class="tab-content">
+                <div class="db-monitor-layout">
+                    <div class="sources-sidebar">
+                        <h3>Data Sources</h3>
+                        <div class="source-list">
+                            <button class="source-btn active" data-source="livechat">💬 LiveChat</button>
+                            <button class="source-btn" data-source="helpdesk">🎫 HelpDesk</button>
+                            <button class="source-btn" data-source="chatbot">🤖 ChatBot</button>
+                            <button class="source-btn" data-source="partner">🤝 Partner CRM</button>
+                            <button class="source-btn" data-source="datateam">📊 Data Team</button>
+                            <button class="source-btn" data-source="clearbit">🔍 ClearBit</button>
+                        </div>
+                        
+                        <div class="validation-rules">
+                            <h4>Validation Rules</h4>
+                            <div class="rule-list">
+                                <div class="rule-item">
+                                    <span>✅ Email Format Check</span>
+                                    <button class="edit-btn">✏️</button>
+                                </div>
+                                <div class="rule-item">
+                                    <span>🔢 Phone Number Validation</span>
+                                    <button class="edit-btn">✏️</button>
+                                </div>
+                            </div>
+                            <button class="btn-primary">+ Add Validation</button>
+                        </div>
+                    </div>
+                    
+                    <div class="properties-panel">
+                        <div class="panel-header">
+                            <h3>LiveChat Properties</h3>
+                            <button class="btn-primary">+ Add Property</button>
+                        </div>
+                        
+                        <div class="properties-table-container">
+                            <div class="properties-table-header">
+                                <div class="header-cell property-name-header">Property Name</div>
+                                <div class="header-cell property-internal-header">Property Internal Name</div>
+                                <div class="header-cell fill-counts-header">Fill Statistics</div>
+                                <div class="header-cell actions-header">Actions</div>
+                            </div>
+                            
+                            <div class="properties-table">
+                                <div class="property-row">
+                                    <div class="property-name-cell">License ID</div>
+                                    <div class="property-internal-cell">livechat_license_id</div>
+                                    <div class="fill-counts-cell">
+                                        <span class="count">Contact: 349,877 / 1,239,789</span>
+                                        <span class="count">Company: 39,454 / 64,788</span>
+                                    </div>
+                                    <div class="property-actions-cell">
+                                        <button class="edit-btn">✏️</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="property-row">
+                                    <div class="property-name-cell">Agent Name</div>
+                                    <div class="property-internal-cell">livechat_agent</div>
+                                    <div class="fill-counts-cell">
+                                        <span class="count">Contact: 892,341 / 1,239,789</span>
+                                        <span class="count">Company: 12,454 / 64,788</span>
+                                    </div>
+                                    <div class="property-actions-cell">
+                                        <button class="edit-btn">✏️</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="property-row">
+                                    <div class="property-name-cell">Chat Rating</div>
+                                    <div class="property-internal-cell">livechat_rating</div>
+                                    <div class="fill-counts-cell">
+                                        <span class="count">Contact: 445,123 / 1,239,789</span>
+                                        <span class="count">Company: 8,923 / 64,788</span>
+                                    </div>
+                                    <div class="property-actions-cell">
+                                        <button class="edit-btn">✏️</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="property-row">
+                                    <div class="property-name-cell">Session Duration</div>
+                                    <div class="property-internal-cell">livechat_duration</div>
+                                    <div class="fill-counts-cell">
+                                        <span class="count">Contact: 723,456 / 1,239,789</span>
+                                        <span class="count">Company: 45,123 / 64,788</span>
+                                    </div>
+                                    <div class="property-actions-cell">
+                                        <button class="edit-btn">✏️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Page -->
+            <div id="logs" class="tab-content">
+                <div class="logs-layout">
+                    <div class="rate-limit-monitor">
+                        <h3>HubSpot API Rate Limits</h3>
+                        <div class="rate-limit-grid">
+                            <div class="limit-card">
+                                <h4>Daily Calls</h4>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 67%"></div>
+                                </div>
+                                <span>67,234 / 100,000</span>
+                            </div>
+                            <div class="limit-card">
+                                <h4>10-sec Window</h4>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 30%"></div>
+                                </div>
+                                <span>30 / 100</span>
+                            </div>
+                            <div class="limit-card">
+                                <h4>Burst Capacity</h4>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 15%"></div>
+                                </div>
+                                <span>15 / 100</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="queue-management">
+                        <h3>Queue Management</h3>
+                        <div class="queue-stats">
+                            <div class="queue-stat">
+                                <span class="stat-number">245</span>
+                                <span class="stat-label">Pending</span>
+                            </div>
+                            <div class="queue-stat">
+                                <span class="stat-number">18</span>
+                                <span class="stat-label">Processing</span>
+                            </div>
+                            <div class="queue-stat">
+                                <span class="stat-number">7</span>
+                                <span class="stat-label">Failed</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="throttling-controls">
+                        <h3>Throttling Controls</h3>
+                        <div class="throttle-grid">
+                            <div class="throttle-control">
+                                <span>LiveChat</span>
+                                <input type="range" min="1" max="50" value="20">
+                                <span>20 calls/min</span>
+                            </div>
+                            <div class="throttle-control">
+                                <span>HelpDesk</span>
+                                <input type="range" min="1" max="50" value="15">
+                                <span>15 calls/min</span>
+                            </div>
+                            <div class="throttle-control">
+                                <span>ChatBot</span>
+                                <input type="range" min="1" max="50" value="10">
+                                <span>10 calls/min</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="retry-queue">
+                        <h3>Failed Record Retry Queue</h3>
+                        <div class="retry-table">
+                            <div class="retry-row">
+                                <span>Contact #12345</span>
+                                <span>Retry 3/5</span>
+                                <span>Next: 32s</span>
+                                <button class="btn-secondary">Retry Now</button>
+                            </div>
+                            <div class="retry-row">
+                                <span>Company #67890</span>
+                                <span>Retry 1/5</span>
+                                <span>Next: 4s</span>
+                                <button class="btn-secondary">Retry Now</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="logs-section">
+                        <h3>API Logs</h3>
+                        
+                        <div class="unified-filters">
+                            <div class="filters-row">
+                                <select class="filter-select">
+                                    <option>All Products</option>
+                                    <option>LiveChat</option>
+                                    <option>HelpDesk</option>
+                                    <option>ChatBot</option>
+                                    <option>Partner CRM</option>
+                                    <option>Data Team</option>
+                                    <option>ClearBit</option>
+                                </select>
+                                <select class="filter-select">
+                                    <option>All Status</option>
+                                    <option>200 Success</option>
+                                    <option>400 Bad Request</option>
+                                    <option>401 Unauthorized</option>
+                                    <option>429 Rate Limited</option>
+                                    <option>500 Server Error</option>
+                                </select>
+                                <select class="filter-select">
+                                    <option>All Methods</option>
+                                    <option>GET</option>
+                                    <option>POST</option>
+                                    <option>PUT</option>
+                                    <option>DELETE</option>
+                                </select>
+                                <input type="text" class="filter-input" placeholder="Filter by URL...">
+                                <input type="date" class="filter-date">
+                                <input type="time" class="filter-time">
+                            </div>
+                            
+                            <div class="api-usage-summary">
+                                <div class="usage-stat">
+                                    <span class="usage-number">15,234</span>
+                                    <span class="usage-label">Daily</span>
+                                </div>
+                                <div class="usage-stat">
+                                    <span class="usage-number">89,567</span>
+                                    <span class="usage-label">Weekly</span>
+                                </div>
+                                <div class="usage-stat">
+                                    <span class="usage-number">342,891</span>
+                                    <span class="usage-label">Monthly</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="logs-table-container">
+                            <div class="logs-table-header">
+                                <div class="log-header-cell method-header">Method</div>
+                                <div class="log-header-cell url-header">Request URL</div>
+                                <div class="log-header-cell status-header">Status</div>
+                                <div class="log-header-cell timestamp-header">Timestamp</div>
+                                <div class="log-header-cell source-header">Source</div>
+                                <div class="log-header-cell alert-header">Alert</div>
+                            </div>
+                            
+                            <div class="logs-table">
+                                <div class="log-row">
+                                    <span class="method get">GET</span>
+                                    <span class="url">/contacts/v1/contact/vid/12345</span>
+                                    <span class="status success">200</span>
+                                    <span class="timestamp">2024-01-15 14:23:45</span>
+                                    <span class="source">LiveChat</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row">
+                                    <span class="method post">POST</span>
+                                    <span class="url">/contacts/v1/contact</span>
+                                    <span class="status success">201</span>
+                                    <span class="timestamp">2024-01-15 14:22:12</span>
+                                    <span class="source">HelpDesk</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row error">
+                                    <span class="method put">PUT</span>
+                                    <span class="url">/companies/v2/companies/67890</span>
+                                    <span class="status error">500</span>
+                                    <span class="timestamp">2024-01-15 14:20:33</span>
+                                    <span class="source">ClearBit</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row">
+                                    <span class="method get">GET</span>
+                                    <span class="url">/contacts/v1/lists/all/contacts/all</span>
+                                    <span class="status success">200</span>
+                                    <span class="timestamp">2024-01-15 14:19:58</span>
+                                    <span class="source">ChatBot</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row warning">
+                                    <span class="method post">POST</span>
+                                    <span class="url">/contacts/v1/contact/batch</span>
+                                    <span class="status warning">429</span>
+                                    <span class="timestamp">2024-01-15 14:18:42</span>
+                                    <span class="source">Data Team</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row">
+                                    <span class="method delete">DELETE</span>
+                                    <span class="url">/contacts/v1/contact/vid/54321</span>
+                                    <span class="status success">204</span>
+                                    <span class="timestamp">2024-01-15 14:17:29</span>
+                                    <span class="source">Partner CRM</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row">
+                                    <span class="method get">GET</span>
+                                    <span class="url">/companies/v2/companies/paged</span>
+                                    <span class="status success">200</span>
+                                    <span class="timestamp">2024-01-15 14:16:15</span>
+                                    <span class="source">ClearBit</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row error">
+                                    <span class="method post">POST</span>
+                                    <span class="url">/contacts/v1/contact/email/test@example.com/profile</span>
+                                    <span class="status error">400</span>
+                                    <span class="timestamp">2024-01-15 14:15:03</span>
+                                    <span class="source">LiveChat</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row">
+                                    <span class="method put">PUT</span>
+                                    <span class="url">/contacts/v1/contact/vid/98765/property/email</span>
+                                    <span class="status success">200</span>
+                                    <span class="timestamp">2024-01-15 14:13:47</span>
+                                    <span class="source">HelpDesk</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row">
+                                    <span class="method get">GET</span>
+                                    <span class="url">/deals/v1/deal/paged</span>
+                                    <span class="status success">200</span>
+                                    <span class="timestamp">2024-01-15 14:12:34</span>
+                                    <span class="source">Partner CRM</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row error">
+                                    <span class="method post">POST</span>
+                                    <span class="url">/companies/v2/companies</span>
+                                    <span class="status error">401</span>
+                                    <span class="timestamp">2024-01-15 14:11:21</span>
+                                    <span class="source">ChatBot</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row">
+                                    <span class="method get">GET</span>
+                                    <span class="url">/contacts/v1/contact/statistics</span>
+                                    <span class="status success">200</span>
+                                    <span class="timestamp">2024-01-15 14:10:08</span>
+                                    <span class="source">Data Team</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row warning">
+                                    <span class="method put">PUT</span>
+                                    <span class="url">/contacts/v1/contact/createOrUpdate/email/user@company.com</span>
+                                    <span class="status warning">429</span>
+                                    <span class="timestamp">2024-01-15 14:08:55</span>
+                                    <span class="source">ClearBit</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row">
+                                    <span class="method get">GET</span>
+                                    <span class="url">/properties/v1/contacts/properties</span>
+                                    <span class="status success">200</span>
+                                    <span class="timestamp">2024-01-15 14:07:42</span>
+                                    <span class="source">LiveChat</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                                <div class="log-row">
+                                    <span class="method post">POST</span>
+                                    <span class="url">/companies/v2/companies/batch</span>
+                                    <span class="status success">202</span>
+                                    <span class="timestamp">2024-01-15 14:06:29</span>
+                                    <span class="source">HelpDesk</span>
+                                    <button class="alert-btn">🔔</button>
+                                </div>
+                            </div>
+                            
+                            <div class="logs-pagination">
+                                <button class="btn-secondary">Previous</button>
+                                <span class="pagination-info">Showing 1-15 of 247 logs</span>
+                                <button class="btn-secondary">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts Page -->
+            <div id="alerts" class="tab-content">
+                <div class="alerts-section">
+                    <div class="alerts-header">
+                        <h3>Alert Rules</h3>
+                        <button class="btn-primary">+ Add New Alert</button>
+                    </div>
+                    
+                    <div class="alerts-list">
+                        <div class="alert-rule">
+                            <div class="rule-info">
+                                <h4>API Error Rate > 5%</h4>
+                                <p>Triggers when error rate exceeds 5% over 10 minutes</p>
+                                <span class="alert-type">📧 Email + 💬 Slack</span>
+                            </div>
+                            <div class="rule-actions">
+                                <button class="edit-btn">✏️</button>
+                                <button class="delete-btn">🗑️</button>
+                            </div>
+                        </div>
+                        
+                        <div class="alert-rule">
+                            <div class="rule-info">
+                                <h4>Queue Backup > 1000</h4>
+                                <p>Alert when pending queue exceeds 1000 items</p>
+                                <span class="alert-type">📧 Email</span>
+                            </div>
+                            <div class="rule-actions">
+                                <button class="edit-btn">✏️</button>
+                                <button class="delete-btn">🗑️</button>
+                            </div>
+                        </div>
+                        
+                        <div class="alert-rule">
+                            <div class="rule-info">
+                                <h4>Rate Limit Approaching</h4>
+                                <p>Warn when approaching 80% of daily API limit</p>
+                                <span class="alert-type">💬 Slack</span>
+                            </div>
+                            <div class="rule-actions">
+                                <button class="edit-btn">✏️</button>
+                                <button class="delete-btn">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backups Page -->
+            <div id="backups" class="tab-content">
+                <div class="backups-layout">
+                    <div class="rollback-center">
+                        <h3>Rollback Center</h3>
+                        <div class="rollback-options">
+                            <button class="btn-warning">Rollback Last Hour</button>
+                            <button class="btn-warning">Rollback Last 24h</button>
+                            <button class="btn-danger">Custom Rollback</button>
+                        </div>
+                        <div class="recent-syncs">
+                            <h4>Recent Sync Operations</h4>
+                            <div class="sync-item">
+                                <span>LiveChat Sync - 145 records</span>
+                                <span>2024-01-15 14:30</span>
+                                <button class="btn-secondary">Rollback</button>
+                            </div>
+                            <div class="sync-item">
+                                <span>ClearBit Sync - 892 records</span>
+                                <span>2024-01-15 14:15</span>
+                                <button class="btn-secondary">Rollback</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="reconciliation-tools">
+                        <h3>Data Reconciliation</h3>
+                        <div class="reconcile-actions">
+                            <button class="btn-primary">Compare LiveChat ↔ HubSpot</button>
+                            <button class="btn-primary">Compare ClearBit ↔ HubSpot</button>
+                            <button class="btn-primary">Full Reconciliation Report</button>
+                        </div>
+                        <div class="reconcile-results">
+                            <div class="result-item">
+                                <span>⚠️ 23 mismatched records found</span>
+                                <button class="btn-secondary">View Details</button>
+                            </div>
+                            <div class="result-item">
+                                <span>✅ ClearBit data 100% synced</span>
+                                <button class="btn-secondary">View Report</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="conflict-resolution">
+                        <h3>Conflict Resolution</h3>
+                        <div class="conflict-list">
+                            <div class="conflict-item">
+                                <div class="conflict-info">
+                                    <h4>Contact Email Mismatch</h4>
+                                    <p>LiveChat: john@example.com | HubSpot: john.doe@example.com</p>
+                                </div>
+                                <div class="conflict-actions">
+                                    <button class="btn-secondary">Use LiveChat</button>
+                                    <button class="btn-secondary">Use HubSpot</button>
+                                    <button class="btn-primary">Manual Review</button>
+                                </div>
+                            </div>
+                            
+                            <div class="conflict-item">
+                                <div class="conflict-info">
+                                    <h4>Company Name Conflict</h4>
+                                    <p>Partner CRM: "ACME Corp" | HubSpot: "Acme Corporation"</p>
+                                </div>
+                                <div class="conflict-actions">
+                                    <button class="btn-secondary">Use Partner CRM</button>
+                                    <button class="btn-secondary">Use HubSpot</button>
+                                    <button class="btn-primary">Manual Review</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="backup-status">
+                        <h3>Backup Status</h3>
+                        <div class="backup-table">
+                            <div class="backup-row">
+                                <span class="table-name">LiveChat Contacts</span>
+                                <span class="record-count">1,239,789</span>
+                                <span class="last-updated">2024-01-15 14:30:00</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="backup-row">
+                                <span class="table-name">HelpDesk Tickets</span>
+                                <span class="record-count">456,123</span>
+                                <span class="last-updated">2024-01-15 14:25:00</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="backup-row">
+                                <span class="table-name">ChatBot Sessions</span>
+                                <span class="record-count">892,456</span>
+                                <span class="last-updated">2024-01-15 14:20:00</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-primary">+ Add New Table/Source</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Config Page -->
+            <div id="config" class="tab-content">
+                <div class="config-layout">
+                    <div class="sync-controls">
+                        <h3>Manual Sync Controls</h3>
+                        <div class="sync-grid">
+                            <div class="sync-source">
+                                <div class="source-info">
+                                    <h4>💬 LiveChat</h4>
+                                    <span class="status running">Running</span>
+                                </div>
+                                <div class="source-actions">
+                                    <button class="btn-primary">Sync Now</button>
+                                    <button class="btn-secondary">Pause</button>
+                                </div>
+                            </div>
+                            
+                            <div class="sync-source">
+                                <div class="source-info">
+                                    <h4>🎫 HelpDesk</h4>
+                                    <span class="status paused">Paused</span>
+                                </div>
+                                <div class="source-actions">
+                                    <button class="btn-primary">Sync Now</button>
+                                    <button class="btn-success">Resume</button>
+                                </div>
+                            </div>
+                            
+                            <div class="sync-source">
+                                <div class="source-info">
+                                    <h4>🤖 ChatBot</h4>
+                                    <span class="status running">Running</span>
+                                </div>
+                                <div class="source-actions">
+                                    <button class="btn-primary">Sync Now</button>
+                                    <button class="btn-secondary">Pause</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="batch-controls">
+                        <h3>Batch Processing Controls</h3>
+                        <div class="batch-settings">
+                            <div class="setting-group">
+                                <label>Chunk Size</label>
+                                <input type="number" value="100" min="10" max="1000">
+                                <span>records per batch</span>
+                            </div>
+                            <div class="setting-group">
+                                <label>Batch Interval</label>
+                                <input type="number" value="30" min="1" max="300">
+                                <span>seconds between batches</span>
+                            </div>
+                            <div class="setting-group">
+                                <label>Max Concurrent</label>
+                                <input type="number" value="5" min="1" max="20">
+                                <span>parallel processes</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sync-scheduler">
+                        <h3>Sync Scheduler</h3>
+                        <div class="schedule-list">
+                            <div class="schedule-item">
+                                <div class="schedule-info">
+                                    <h4>LiveChat Daily Sync</h4>
+                                    <span class="cron">0 2 * * *</span>
+                                    <span class="next-run">Next: Tomorrow 2:00 AM</span>
+                                </div>
+                                <div class="schedule-actions">
+                                    <button class="edit-btn">✏️</button>
+                                    <button class="delete-btn">🗑️</button>
+                                </div>
+                            </div>
+                            
+                            <div class="schedule-item">
+                                <div class="schedule-info">
+                                    <h4>ClearBit Weekly Enrichment</h4>
+                                    <span class="cron">0 0 * * 0</span>
+                                    <span class="next-run">Next: Sunday 12:00 AM</span>
+                                </div>
+                                <div class="schedule-actions">
+                                    <button class="edit-btn">✏️</button>
+                                    <button class="delete-btn">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-primary">+ Add Schedule</button>
+                    </div>
+                    
+                    <div class="data-source-config">
+                        <h3>Data Source Configuration</h3>
+                        <div class="config-accordion">
+                            <div class="config-section">
+                                <div class="section-header">
+                                    <h4>💬 LiveChat API</h4>
+                                    <span class="status connected">Connected</span>
+                                </div>
+                                <div class="section-content">
+                                    <div class="config-field">
+                                        <label>Endpoint URL</label>
+                                        <input type="text" value="https://api.livechatinc.com/v3.2/">
+                                    </div>
+                                    <div class="config-field">
+                                        <label>API Key</label>
+                                        <input type="password" value="••••••••••••••••">
+                                        <button class="btn-secondary">Test Connection</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="config-section">
+                                <div class="section-header">
+                                    <h4>🎫 HelpDesk API</h4>
+                                    <span class="status connected">Connected</span>
+                                </div>
+                                <div class="section-content">
+                                    <div class="config-field">
+                                        <label>Endpoint URL</label>
+                                        <input type="text" value="https://api.helpdesk.com/v2/">
+                                    </div>
+                                    <div class="config-field">
+                                        <label>API Key</label>
+                                        <input type="password" value="••••••••••••••••">
+                                        <button class="btn-secondary">Test Connection</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="config-section">
+                                <div class="section-header">
+                                    <h4>🔍 ClearBit API</h4>
+                                    <span class="status warning">Rate Limited</span>
+                                </div>
+                                <div class="section-content">
+                                    <div class="config-field">
+                                        <label>Endpoint URL</label>
+                                        <input type="text" value="https://person-stream.clearbit.com/v2/">
+                                    </div>
+                                    <div class="config-field">
+                                        <label>API Key</label>
+                                        <input type="password" value="••••••••••••••••">
+                                        <button class="btn-secondary">Test Connection</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
