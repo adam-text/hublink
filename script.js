@@ -1,3 +1,22 @@
+// Constants
+const CONFIG = {
+    CHART_HEIGHT: 300,
+    MINI_CHART_HEIGHT: 100,
+    SIDEBAR_WIDTH: 350,
+    UPDATE_INTERVALS: {
+        RATE_LIMIT: 5000,
+        QUEUE_STATS: 3000,
+        PROGRESS_BARS: 2000
+    },
+    DATA_SOURCES: ['livechat', 'helpdesk', 'chatbot', 'partner', 'datateam', 'clearbit'],
+    NOTIFICATION_DURATION: 3000,
+    API_LIMITS: {
+        DAILY_MAX: 100000,
+        BURST_MAX: 100,
+        WINDOW_MAX: 100
+    }
+};
+
 // Tab Navigation
 document.addEventListener('DOMContentLoaded', function() {
     const tabButtons = document.querySelectorAll('.tab-btn');
@@ -23,15 +42,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Properties Panel with LiveChat
     updatePropertiesPanel('💬 LiveChat');
     
-    // Error Analytics Date Pickers
-    const errorDateFrom = document.getElementById('errorDateFrom');
-    const errorDateTo = document.getElementById('errorDateTo');
-    const errorSourceFilter = document.getElementById('errorSourceFilter');
-    
-    if (errorDateFrom && errorDateTo && errorSourceFilter) {
-        errorDateFrom.addEventListener('change', updateErrorChart);
-        errorDateTo.addEventListener('change', updateErrorChart);
-        errorSourceFilter.addEventListener('change', updateErrorChart);
+    // Error Analytics Date Pickers with better error handling
+    try {
+        const errorDateFrom = document.getElementById('errorDateFrom');
+        const errorDateTo = document.getElementById('errorDateTo');
+        const errorSourceFilter = document.getElementById('errorSourceFilter');
+        
+        if (errorDateFrom && errorDateTo && errorSourceFilter) {
+            errorDateFrom.addEventListener('change', updateErrorChart);
+            errorDateTo.addEventListener('change', updateErrorChart);
+            errorSourceFilter.addEventListener('change', updateErrorChart);
+        }
+    } catch (error) {
+        console.warn('Error initializing error analytics controls:', error);
     }
     
     // Chart Period Selector
@@ -229,28 +252,47 @@ let miniCharts = {};
 let errorChart = null;
 
 function initializeCharts() {
-    // Initialize main chart
-    createMainChart('month');
-    
-    // Initialize mini charts for each source
-    const sources = ['livechat', 'helpdesk', 'chatbot', 'partner', 'datateam', 'clearbit'];
-    sources.forEach(source => {
-        createMiniChart(source);
-    });
-    
-    // Initialize error chart
-    createErrorChart();
+    try {
+        // Initialize main chart
+        createMainChart('month');
+        
+        // Initialize mini charts for each source
+        CONFIG.DATA_SOURCES.forEach(source => {
+            try {
+                createMiniChart(source);
+            } catch (error) {
+                console.warn(`Failed to create mini chart for ${source}:`, error);
+            }
+        });
+        
+        // Initialize error chart
+        createErrorChart();
+    } catch (error) {
+        console.error('Error initializing charts:', error);
+        showNotification('Failed to initialize charts. Chart.js may not be loaded.');
+    }
 }
 
 function createMainChart(period) {
-    const ctx = document.getElementById('mainChart');
-    if (!ctx) return;
-    
-    if (mainChart) {
-        mainChart.destroy();
-    }
-    
-    const data = getMainChartData(period);
+    try {
+        const ctx = document.getElementById('mainChart');
+        if (!ctx) {
+            console.warn('Main chart canvas element not found');
+            return;
+        }
+        
+        // Check if Chart.js is available
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js library not loaded');
+            showNotification('Chart.js library not loaded. Please check your internet connection.');
+            return;
+        }
+        
+        if (mainChart) {
+            mainChart.destroy();
+        }
+        
+        const data = getMainChartData(period);
     
     mainChart = new Chart(ctx, {
         type: 'line',
@@ -310,17 +352,30 @@ function createMainChart(period) {
             }
         }
     });
+    } catch (error) {
+        console.error('Error creating main chart:', error);
+        showNotification('Failed to create main chart');
+    }
 }
 
 function createMiniChart(source) {
-    const ctx = document.getElementById(`${source}Chart`);
-    if (!ctx) return;
-    
-    if (miniCharts[source]) {
-        miniCharts[source].destroy();
-    }
-    
-    const data = getMiniChartData(source);
+    try {
+        const ctx = document.getElementById(`${source}Chart`);
+        if (!ctx) {
+            console.warn(`Mini chart canvas for ${source} not found`);
+            return;
+        }
+        
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js library not loaded');
+            return;
+        }
+        
+        if (miniCharts[source]) {
+            miniCharts[source].destroy();
+        }
+        
+        const data = getMiniChartData(source);
     
     miniCharts[source] = new Chart(ctx, {
         type: 'line',
@@ -389,6 +444,9 @@ function createMiniChart(source) {
             }
         }
     });
+    } catch (error) {
+        console.error(`Error creating mini chart for ${source}:`, error);
+    }
 }
 
 function getMainChartData(period) {
@@ -809,13 +867,15 @@ function showNotification(message) {
         notification.style.transform = 'translateX(0)';
     }, 100);
     
-    // Remove after 3 seconds
+    // Remove after configured duration
     setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
-            document.body.removeChild(notification);
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
         }, 300);
-    }, 3000);
+    }, CONFIG.NOTIFICATION_DURATION);
 }
 
 function startRealTimeUpdates() {
@@ -828,10 +888,10 @@ function startRealTimeUpdates() {
             dailyProgress.style.width = `${newWidth}%`;
             
             const dailyText = dailyProgress.parentElement.nextElementSibling;
-            const newCount = Math.floor((newWidth / 100) * 100000);
-            dailyText.textContent = `${newCount.toLocaleString()} / 100,000`;
+            const newCount = Math.floor((newWidth / 100) * CONFIG.API_LIMITS.DAILY_MAX);
+            dailyText.textContent = `${newCount.toLocaleString()} / ${CONFIG.API_LIMITS.DAILY_MAX.toLocaleString()}`;
         }
-    }, 5000);
+    }, CONFIG.UPDATE_INTERVALS.RATE_LIMIT);
     
     // Simulate queue updates
     setInterval(() => {
@@ -842,7 +902,7 @@ function startRealTimeUpdates() {
             const newValue = Math.max(0, currentValue + change);
             stat.textContent = newValue;
         });
-    }, 3000);
+    }, CONFIG.UPDATE_INTERVALS.QUEUE_STATS);
     
     // Simulate progress bar updates
     setInterval(() => {
@@ -854,7 +914,7 @@ function startRealTimeUpdates() {
                 bar.style.width = `${newWidth}%`;
             }
         });
-    }, 2000);
+    }, CONFIG.UPDATE_INTERVALS.PROGRESS_BARS);
 }
 
 // Keyboard shortcuts
